@@ -3,17 +3,23 @@
 #include <set>
 #include <map>
 #include <queue>
+#include <string>
 using namespace std;
 
-// Bir durumun epsilon kapanımını hesaplayan fonksiyon
-set<int> epsilonKapanimi(int durum, map<int, vector<pair<string, int>>> &gecisler) {
-    set<int> kapanim;
-    queue<int> kuyruk;
+map<string, vector<pair<string, string>>> nfa; // NFA yapisi
+set<string> nfaKabulDurumlari;
+vector<string> gecisAdlari;
+string baslangicDurumu;
+
+// Bir durumun epsilon kapanimını hesaplayan fonksiyon
+set<string> epsilonKapanimi(string durum, map<string, vector<pair<string, string>>> &gecisler) {
+    set<string> kapanim;
+    queue<string> kuyruk;
     kuyruk.push(durum);
     kapanim.insert(durum);
 
     while (!kuyruk.empty()) {
-        int mevcut = kuyruk.front(); kuyruk.pop();
+        string mevcut = kuyruk.front(); kuyruk.pop();
         for (auto &gecis : gecisler[mevcut]) {
             if (gecis.first == "bosluk" && kapanim.find(gecis.second) == kapanim.end()) {
                 kapanim.insert(gecis.second);
@@ -25,22 +31,22 @@ set<int> epsilonKapanimi(int durum, map<int, vector<pair<string, int>>> &gecisle
 }
 
 // NFA'dan DFA'ya dönüştüren fonksiyon
-void NFAyiDFACevir(map<int, vector<pair<string, int>>> &nfa, set<int> &nfaKabulDurumlari, int baslangicDurumu, vector<string> &gecisAdlari) {
-    map<set<int>, map<string, set<int>>> dfaGecisler; // DFA gecisleri
-    set<set<int>> dfaDurumlari;
-    queue<set<int>> durumKuyrugu;
-    set<int> dfaBaslangicDurumu = epsilonKapanimi(baslangicDurumu, nfa);
+void NFAyiDFACevir(map<string, vector<pair<string, string>>> &nfa, set<string> &nfaKabulDurumlari, string baslangicDurumu, vector<string> &gecisAdlari) {
+    map<set<string>, map<string, set<string>>> dfaGecisler; // DFA gecisleri
+    set<set<string>> dfaDurumlari;
+    queue<set<string>> durumKuyrugu;
+    set<string> dfaBaslangicDurumu = epsilonKapanimi(baslangicDurumu, nfa);
     durumKuyrugu.push(dfaBaslangicDurumu);
     dfaDurumlari.insert(dfaBaslangicDurumu);
 
     while (!durumKuyrugu.empty()) {
-        set<int> mevcutDurum = durumKuyrugu.front(); durumKuyrugu.pop();
+        set<string> mevcutDurum = durumKuyrugu.front(); durumKuyrugu.pop();
         for (string gecisAdi : gecisAdlari) {
-            set<int> yeniDurum;
-            for (int durum : mevcutDurum) {
+            set<string> yeniDurum;
+            for (string durum : mevcutDurum) {
                 for (auto &gecis : nfa[durum]) {
                     if (gecis.first == gecisAdi) {
-                        set<int> kapanim = epsilonKapanimi(gecis.second, nfa);
+                        set<string> kapanim = epsilonKapanimi(gecis.second, nfa);
                         yeniDurum.insert(kapanim.begin(), kapanim.end());
                     }
                 }
@@ -57,20 +63,22 @@ void NFAyiDFACevir(map<int, vector<pair<string, int>>> &nfa, set<int> &nfaKabulD
     cout << "\nDFA Gecisleri:" << endl;
     for (auto &durum : dfaGecisler) {
         for (auto &gecis : durum.second) {
-            cout << "{'";
-            for (int d : durum.first) cout << d;
-            cout << "'} ---'" << gecis.first << "'---> {'";
-            for (int d : gecis.second) cout << d;
-            cout << "'}" << endl;
+            cout << "{";
+            for (auto it = durum.first.begin(); it != durum.first.end(); ++it) {
+                if (it != durum.first.begin()) cout << ", ";
+                cout << *it;
+            }
+            cout << "} ---'" << gecis.first << "'---> {";
+            for (auto it = gecis.second.begin(); it != gecis.second.end(); ++it) {
+                if (it != gecis.second.begin()) cout << ", ";
+                cout << *it;
+            }
+            cout << "}" << endl;
         }
     }
 }
 
 int main() {
-    map<int, vector<pair<string, int>>> nfa;
-    set<int> nfaKabulDurumlari;
-    vector<string> gecisAdlari;
-    int baslangicDurumu;
     int durumSayisi, gecisSayisi, kabulDurumSayisi;
 
     cout << "NFA'daki durum sayisini girin: ";
@@ -81,8 +89,7 @@ int main() {
 
     cout << "Gecisleri girin (baslangic_durumu gecis_adi hedef_durum):\n";
     for (int i = 0; i < gecisSayisi; ++i) {
-        int baslangic, hedef;
-        string gecisAdi;
+        string baslangic, hedef, gecisAdi;
         cin >> baslangic >> gecisAdi >> hedef;
         nfa[baslangic].push_back({gecisAdi, hedef});
         if (gecisAdi != "bosluk") {
@@ -98,7 +105,7 @@ int main() {
 
     cout << "Kabul durumlarini girin:\n";
     for (int i = 0; i < kabulDurumSayisi; ++i) {
-        int kabulDurumu;
+        string kabulDurumu;
         cin >> kabulDurumu;
         nfaKabulDurumlari.insert(kabulDurumu);
     }
