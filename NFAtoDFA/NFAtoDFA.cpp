@@ -6,12 +6,12 @@
 #include <string>
 using namespace std;
 
-map<string, vector<pair<string, string>>> nfa; // NFA yapisi
+map<string, vector<pair<string, string>>> nfa;
 set<string> nfaKabulDurumlari;
 vector<string> gecisAdlari;
 string baslangicDurumu;
 
-// Bir durumun epsilon kapanimını hesaplayan fonksiyon
+
 set<string> epsilonKapanimi(string durum, map<string, vector<pair<string, string>>> &gecisler) {
     set<string> kapanim;
     queue<string> kuyruk;
@@ -30,9 +30,9 @@ set<string> epsilonKapanimi(string durum, map<string, vector<pair<string, string
     return kapanim;
 }
 
-// NFA'dan DFA'ya dönüştüren fonksiyon
+
 void NFAyiDFACevir(map<string, vector<pair<string, string>>> &nfa, set<string> &nfaKabulDurumlari, string baslangicDurumu, vector<string> &gecisAdlari) {
-    map<set<string>, map<string, set<string>>> dfaGecisler; // DFA gecisleri
+    map<set<string>, map<string, set<string>>> dfaGecisler;
     set<set<string>> dfaDurumlari;
     queue<set<string>> durumKuyrugu;
     set<string> dfaBaslangicDurumu = epsilonKapanimi(baslangicDurumu, nfa);
@@ -59,7 +59,7 @@ void NFAyiDFACevir(map<string, vector<pair<string, string>>> &nfa, set<string> &
         }
     }
 
-    // DFA geçişlerini ekrana yazdırma
+  
     cout << "\nDFA Gecisleri:" << endl;
     for (auto &durum : dfaGecisler) {
         for (auto &gecis : durum.second) {
@@ -110,7 +110,7 @@ int main() {
         nfaKabulDurumlari.insert(kabulDurumu);
     }
 
-    // Benzersiz geçiş adlarını tutmak için set kullanıyoruz
+    
     set<string> gecisAdiSet(gecisAdlari.begin(), gecisAdlari.end());
     gecisAdlari.assign(gecisAdiSet.begin(), gecisAdiSet.end());
 
